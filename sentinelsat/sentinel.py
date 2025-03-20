@@ -2,10 +2,9 @@ import hashlib
 import logging
 import re
 import threading
-import xml.etree.ElementTree as ET
 from collections import OrderedDict, defaultdict, namedtuple
 from copy import copy
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from pathlib import Path
 from typing import Dict
 from urllib.parse import quote_plus, urljoin

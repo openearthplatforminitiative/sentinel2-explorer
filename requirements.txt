@@ -1,0 +1,2 @@
+requests_oauthlib
+tqdm >= 4.58
