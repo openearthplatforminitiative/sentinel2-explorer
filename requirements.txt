@@ -1,2 +1,8 @@
 requests_oauthlib
 tqdm >= 4.58
+html2text
+geomet
+geojson
+numpy
+pandas
+gdal==3.6.2
