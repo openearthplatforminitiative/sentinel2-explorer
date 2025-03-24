@@ -6,4 +6,3 @@ geojson
 numpy
 pandas
 gdal==3.6.2
-shapely --no-binary shapely
