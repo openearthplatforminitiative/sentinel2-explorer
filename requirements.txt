@@ -5,4 +5,5 @@ geomet
 geojson
 numpy
 pandas
-gdal==3.10.2
+gdal
+shapely --no-binary shapely
