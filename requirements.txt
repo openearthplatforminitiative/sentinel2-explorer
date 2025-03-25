@@ -5,4 +5,4 @@ geomet
 geojson
 numpy
 pandas
-gdal==3.6.2
+gdal==3.10.2
