@@ -5,6 +5,7 @@ import rasterio.features
 import os.path
 import hashlib
 import uuid
+import pathlib
 import numpy as np
 import pandas as pd
 import fnmatch
@@ -206,15 +207,15 @@ class Sentinel2Loader:
 
     def downloadAll(self, products, nodefilter=None, checksum=True):
         hash = hashlib.md5(json.dumps(products).encode()).hexdigest()
-        filename = f"{self.dataPath}/cache/{hash}.json"
-        if os.path.isfile(filename):
-            return json.load(open(filename)), filename
+        #filename = pathlib.Path(f"{self.dataPath}/cache/{hash}.json")
+        #if filename.exists():
+        #    return json.load(open(filename))
         if nodefilter is not None:
             nodefilter = make_path_filter(nodefilter, exclude=False)
 
         dl, _, _ = self.api.download_all(products, f"{self.dataPath}/products", nodefilter=nodefilter, checksum=checksum)
-        saveFile(filename, json.dumps(dl, indent=4, sort_keys=True, default=str))
-        return dl, filename
+        #saveFile(filename, json.dumps(dl, indent=4, sort_keys=True, default=str))
+        return dl
 
     def getNodePaths(self, product_infos, filefilter):
         def node_filter(node):
