@@ -206,13 +206,13 @@ class Sentinel2Loader:
 
     def downloadAll(self, products, nodefilter=None, checksum=True):
         hash = hashlib.md5(json.dumps(products).encode()).hexdigest()
-        if os.path.isfile(f"{self.dataPath}/cache/{hash}.json"):
-            return json.load(open(f"{self.dataPath}/cache/{hash}.json"))
+        filename = f"{self.dataPath}/cache/{hash}.json"
+        if os.path.isfile(filename):
+            return json.load(open(filename)), filename
         if nodefilter is not None:
             nodefilter = make_path_filter(nodefilter, exclude=False)
 
         dl, _, _ = self.api.download_all(products, f"{self.dataPath}/products", nodefilter=nodefilter, checksum=checksum)
-        filename = f"{self.dataPath}/cache/{hash}.json"
         saveFile(filename, json.dumps(dl, indent=4, sort_keys=True, default=str))
         return dl, filename
 
