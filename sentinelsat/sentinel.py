@@ -1353,7 +1353,8 @@ def _parse_odata_response(product):
         "OriginDate": _parse_iso_date(product["OriginDate"]),
     }
     for checksum in product.get("Checksum", []):
-        output[checksum["Algorithm"].lower()] = checksum["Value"]
+        if bool(checksum):
+            output[checksum["Algorithm"].lower()] = checksum["Value"]
 
     # Parse the extended metadata, if provided
     converters = [float, int, _parse_iso_date]

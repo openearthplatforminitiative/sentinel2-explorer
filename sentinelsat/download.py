@@ -104,7 +104,7 @@ class Downloader:
         self.lta_timeout = lta_timeout
         self.chunk_size = 2**20  # download in 1 MB chunks by default
 
-    def download(self, id, directory=".", resolution="*", band="*", stop_event=None):
+    def download(self, id, directory=".", stop_event=None):
         """Download a product.
 
         Parameters
