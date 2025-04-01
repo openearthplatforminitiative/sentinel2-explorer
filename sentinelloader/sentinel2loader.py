@@ -91,77 +91,6 @@ class Sentinel2Loader:
                 os.system("nearblack %s -white -near 50 -nb 4" % tile)
                 progress.update()
 
-    def retile_products(self, products, overlap=32):
-        logger.debug("Retiling products with overlap %d" % overlap)
-        zipdir = f"{self.dataPath}/extracted"
-        virts = []
-
-        paths = []
-        for id in products:
-            product = products[id]
-            paths.append(f"{self.dataPath}/products/{product['title']}")
-
-        with tqdm(desc="Unzipping products",
-                  total=len(paths),
-                  unit="tile") as progress:
-            for zipp in paths:
-                ziptitle = zipp.split("/")[-1]
-                if os.path.exists(f"{zipdir}/{ziptitle}"):
-                    continue
-                with zipfile.ZipFile(zipp, 'r') as zipref:
-                    zipref.extractall(zipdir)
-                os.remove(zipp)
-                progress.update()
-
-        with tqdm(desc="Reprojecting image tiles",
-                  total=len(products),
-                  unit="tile") as progress:
-            for id in products:
-                product = products[id]
-                bandpaths = f"{zipdir}/{product['title']}"
-                virts.append(f"{bandpaths}/tile.vrt")
-                os.system(f"gdalbuildvrt -q -separate %s %s %s %s %s"
-                          % (f"{bandpaths}/rgb.vrt", f"{bandpaths}/B02.tif", f"{bandpaths}/B03.tif",
-                             f"{bandpaths}/B04.tif", f"{bandpaths}/B08.tif"))
-                os.system("gdalwarp -q -t_srs EPSG:3857 %s %s" %
-                          (f"{bandpaths}/rgb.vrt", f"{bandpaths}/tile.vrt"))
-                progress.update()
-
-        source_tiles = ' '.join(virts)
-        tilesize = 10008 + overlap*2
-
-        logger.info("Building image mosaic VRT")
-        os.system("gdalbuildvrt mosaic.vrt %s" % source_tiles)
-        #os.system("gdalwarp -te %s %s %s %s virt.vrt virt2.vrt" % (s1[0], s1[1], s2[0], s2[1]))
-
-        logger.info("Retiling images with tilesize %s" % tilesize)
-        os.mkdir(f"{self.dataPath}/retiled")
-        os.system(
-            'gdal_retile -ps %s %s -overlap %s -targetDir %s %s' % (
-                tilesize, tilesize, overlap, f"{self.dataPath}/retiled", "mosaic.vrt"))
-
-        directory = os.fsencode(f"{self.dataPath}/retiled")
-        dirlist = os.listdir(directory)
-        processeddir = f"{self.dataPath}/processed"
-        os.mkdir(processeddir)
-
-        processpaths = []
-
-        with tqdm(desc="Final tile preprocessing",
-                  total=len(dirlist),
-                  unit="tile") as progress:
-            for file in dirlist:
-                filename = os.fsdecode(file)
-                filename_full = f"{self.dataPath}/retiled/{filename}"
-                file_hash = hashlib.md5(filename.encode()).hexdigest()
-                os.system("gdal_translate -q -of COG %s %s" %
-                          (filename_full, f"{processeddir}/{file_hash}.tif"))
-                os.remove(filename_full)
-                processpaths.append(f"{processeddir}/{file_hash}.tif")
-                progress.update()
-
-        return processpaths
-
     def cropRegion(self, geoPolygon, sourceGeoTiffs):
         """Returns an image file with contents from a bunch of GeoTiff files cropped to the specified geoPolygon.
            Pay attention to the fact that a new file is created at each request and you should delete it after using it"""
@@ -283,8 +212,9 @@ class Sentinel2Loader:
             nodefilter = make_path_filter(nodefilter, exclude=False)
 
         dl, _, _ = self.api.download_all(products, f"{self.dataPath}/products", nodefilter=nodefilter, checksum=checksum)
-        saveFile(f"{self.dataPath}/cache/{hash}.json", json.dumps(dl, indent=4, sort_keys=True, default=str))
-        return dl
+        filename = f"{self.dataPath}/cache/{hash}.json"
+        saveFile(filename, json.dumps(dl, indent=4, sort_keys=True, default=str))
+        return dl, filename
 
     def getNodePaths(self, product_infos, filefilter):
         def node_filter(node):

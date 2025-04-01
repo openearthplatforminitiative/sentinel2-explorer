@@ -11,7 +11,7 @@ setup(
     version=version,
     description="Utility for finding and downloading sentinel2 imagery, forked from sentinelsat and sentinelloader",
     classifiers=[
-        "License :: OSI Approved :: MIT License",
+        "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
