@@ -112,7 +112,7 @@ class Sentinel2Loader:
         self._tidyCollars(sourceGeoTiffs)
 
         logger.debug('Combining tiles into a single image. sources=%s tmpfile=%s' % (source_tiles, tmp_file))
-        os.system('gdalwarp  -co "TILED=YES" -co "COMPRESS=JPEG" -co "BIGTIFF=YES" -multi -srcnodata 0 -t_srs EPSG:3857 -te %s %s %s %s %s %s' % (
+        os.system('gdalwarp -co "TILED=YES" -co "COMPRESS=JPEG" -co "BIGTIFF=YES" -multi -srcnodata 0 -t_srs EPSG:3857 -te %s %s %s %s %s %s' % (
         s1[0], s1[1], s2[0], s2[1], source_tiles, tmp_file))
 
         return tmp_file
@@ -206,15 +206,9 @@ class Sentinel2Loader:
         return self.api.download(id, f"{self.dataPath}/products", nodefilter=nodefilter)
 
     def downloadAll(self, products, nodefilter=None, checksum=True):
-        hash = hashlib.md5(json.dumps(products).encode()).hexdigest()
-        #filename = pathlib.Path(f"{self.dataPath}/cache/{hash}.json")
-        #if filename.exists():
-        #    return json.load(open(filename))
         if nodefilter is not None:
             nodefilter = make_path_filter(nodefilter, exclude=False)
-
         dl, _, _ = self.api.download_all(products, f"{self.dataPath}/products", nodefilter=nodefilter, checksum=checksum)
-        #saveFile(filename, json.dumps(dl, indent=4, sort_keys=True, default=str))
         return dl
 
     def getNodePaths(self, product_infos, filefilter):

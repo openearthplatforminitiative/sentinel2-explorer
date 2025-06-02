@@ -811,6 +811,7 @@ class Downloader:
             unit="B",
             unit_scale=True,
             initial=already_downloaded_bytes,
+            disable=True,
         ) as progress, closing(r):
             self.api._check_scihub_response(r, test_json=False)
             mode = "ab" if continuing else "wb"
