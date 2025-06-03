@@ -805,32 +805,25 @@ class Downloader:
         downloaded_bytes = 0
         with self.api.dl_limit_semaphore:
             r = self.api.session.get(url, stream=True, headers=headers)
-        with self._tqdm(
-            desc=f"Downloading {title}",
-            total=file_size,
-            unit="B",
-            unit_scale=True,
-            initial=already_downloaded_bytes,
-            disable=True,
-        ) as progress, closing(r):
-            self.api._check_scihub_response(r, test_json=False)
-            mode = "ab" if continuing else "wb"
-            with open(path, mode) as f:
-                iterator = r.iter_content(chunk_size=self.chunk_size)
-                while True:
-                    if stop_event and stop_event.is_set():
-                        raise concurrent.futures.CancelledError()
-                    try:
-                        with self.api.dl_limit_semaphore:
-                            chunk = next(iterator)
-                    except StopIteration:
-                        break
-                    if chunk:  # filter out keep-alive new chunks
-                        f.write(chunk)
-                        progress.update(len(chunk))
-                        downloaded_bytes += len(chunk)
-            # Return the number of bytes downloaded
-            return downloaded_bytes
+
+        self.api._check_scihub_response(r, test_json=False)
+        mode = "ab" if continuing else "wb"
+        with open(path, mode) as f:
+            iterator = r.iter_content(chunk_size=self.chunk_size)
+            while True:
+                if stop_event and stop_event.is_set():
+                    raise concurrent.futures.CancelledError()
+                try:
+                    with self.api.dl_limit_semaphore:
+                        chunk = next(iterator)
+                except StopIteration:
+                    break
+                if chunk:  # filter out keep-alive new chunks
+                    f.write(chunk)
+                    downloaded_bytes += len(chunk)
+        # Return the number of bytes downloaded
+        r.close()
+        return downloaded_bytes
 
     def _dataobj_to_node_info(self, dataobj_info, product_info):
         path = dataobj_info["href"]
